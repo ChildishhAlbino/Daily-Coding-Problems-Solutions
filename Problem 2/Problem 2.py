@@ -15,6 +15,8 @@ def product(numbers):
         products.append(total)
     return products
 
+# not part of the solution just wanted to test with a wider variety of values
+
 def generateArray(length):
     array = []
     for i in range(0, length):
