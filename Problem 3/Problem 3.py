@@ -38,11 +38,7 @@ def serialize(root):
     if(root.left != None):
         left = serialize(root.left)
         
-    serialized = """NODE { 
-        VALUE: %s 
-        LEFT: %s 
-        RIGHT: %s 
-        }""" % (root.val, left, right)
+    serialized = """node { VALUE: %s LEFT: %s RIGHT: %s }""" % (root.val, left, right)
     return serialized
 
 
@@ -75,7 +71,7 @@ def deserialize(s):
             ## look forward into the string to determine if a node's right or left is Null or another Node{}
             argument = s[index:s.index(" ", index + 1)].strip()
             ## In case of Node{}
-            if(argument == "NODE"):
+            if(argument == "node"):
                 #NODE
                 # Isolates the Node from the rest of string so it can be parsed recursively and independently of the root.
                 isolated = isolateNode(s[index:].strip())
@@ -102,7 +98,7 @@ def deserialize(s):
     return node
 
 # Iterates through the given string 
-# and returns a node in format ready be recursively passed
+# and returns a serialized node in format ready be recursively passed
 def isolateNode(s):
     # Stores current index in the string
     currentIndex = 0 
@@ -110,16 +106,29 @@ def isolateNode(s):
     # Code is always executed at least once 
     # Loop breaks when # of Open Brackets == # of Closed Brackets
     while(True):
-        # slices provided value 
+        # Slices provided String at the index of the nearest closed bracket 
+        # after the current index 
+        # The +1 makes sure that the bracket is included in the string, prevents infinite 
+        # looping
         isolated = s[:s.index("}", currentIndex) + 1]
         openBrackets = isolated.count("{")
         closedBrackets = isolated.count("}")
+        # Increments the current index to the next closed bracket
         currentIndex = s.index("}", currentIndex) + 1
+        # Break condition:
+        ## when # of Open Brackets == # of Closed Brackets
+        # Returns the isolated string ready to be recursively parsed.
         if(openBrackets == closedBrackets):
             return isolated
 
 node = Node('root node', Node('left', Node('left.left')), Node('right'))
-print(serialize(node))
-node = deserialize(serialize(node))
+serialized = serialize(node)
+
+print(serialized + '\n')
+
+deserialized = deserialize(serialized)
+reserealized = serialize(deserialized)
+
+assert serialized == reserealized
 assert node.left.left.val == 'left.left'
 assert node.right.val == 'right'
