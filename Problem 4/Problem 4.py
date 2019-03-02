@@ -5,10 +5,7 @@
 # For example, the input[3, 4, -1, 1] should give 2. The input[1, 2, 0] should give 3.
 # You can modify the input array in-place.
 
-# Note: I'm not sure if this has complexity of linear time or quadratic time.
-# I think it might be quadratic because searching the array has a complexity of
-# linear time and since I'm running that N times, the complexity is N^2
-# How could I do this linearly?
+# Note: This solution is imperfect. Not linear, unsure how to achieve this linearly.
 def solution(array):
     # Placeholder for the current lowest positive integer not in the list.
     lowestValue = None
