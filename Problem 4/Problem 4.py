@@ -29,7 +29,30 @@ def solution(array):
                 lowestValue = j
     return lowestValue
 
+def solutionLinear(array):
+    # assume the lowest positive integer is 1
+    lpi = 1 # Lowest Positive Integer
+    for i in array:
+        # check a value
+        # if value is negative, ignore it
+        if(i > 0):
+            ## Case 1: i == LPI
+            if(i == lpi):
+                ### LPI can't be valid as the value is in the list
+                ### LPI + 1
+                lpi += 1
+            ## Otherwise:
+            else: 
+                ### If the difference between lpi and i is 1
+                ### AND lpi is greater than i
+                if(i - lpi == 1) and (lpi >= i):
+                    ### LPI + 2
+                    lpi += 2
+    return lpi
 
-print(solution([3, 4, -1, 1])) # returns 2
-print(solution([1, 2, 0])) # returns 3
-print(solution([-9, -5])) # returns 1
+
+print(solutionLinear([3, 4, -1, 1, 5])) # returns 2
+print(solutionLinear([1, 2, 0, 10])) # returns 3
+print(solutionLinear([-9, -5])) # returns 1
+print(solutionLinear([50, 75])) # returns 1
+print(solutionLinear([])) # returns 1
