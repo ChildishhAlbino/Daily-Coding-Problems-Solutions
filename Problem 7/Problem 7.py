@@ -36,23 +36,33 @@ def numWays(string):
     if(string[0] == 0):
         return 0
 
-
-
-    # arr.extend(expandPath(string, ''))
+    arr.extend(recurse(string, ''))
+    for item in arr:
+        if(arr.count(item) > 1):
+            arr.remove(item)
     print(arr)
     return len(arr)
 
 def recurse(string, context):
     contexts = []
-
+    if(string == ""):
+        contexts.append(context)
+        return contexts
     firstTwoChars = string[0:2]
     if(int(firstTwoChars) < 27):
-        s = decode(firstTwoChars, context) + 
+        s = decode(firstTwoChars, context)
+        contexts.extend(recurse(string[2:], s))
+        s2 = decode(firstTwoChars[:1], context)
+        contexts.extend(recurse(string[1:], s2))
     else:
-        print(29)
+        s2 = decode(firstTwoChars[:1], context)
+        contexts.extend(recurse(string[1:], s2))
+    return contexts
 
 def decode(message, context):
     decoded = m[message]
-    return context + message
+    return context + decoded
 
-print(numWays('111'))
+
+print(numWays('26'))  # returns 2 ['z', 'bf']
+print(numWays('226'))  # returns 3 ['vf', 'bz', 'bbf']
