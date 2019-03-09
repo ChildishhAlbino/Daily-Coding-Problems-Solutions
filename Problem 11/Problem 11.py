@@ -13,6 +13,7 @@
 ### a) the value of all possible strings for the given path 
 ### b) a map where the keys are every letter in the Alphabet and the values are sub-nodes.
 ## The root node would have a value of every option from the array given.
+
 # Diagrammatic rep (Note: all Null values have been excluded)
 # root {
 #   value = ['dog', 'deer', 'deal']
@@ -28,91 +29,154 @@
 #      }
 #   
 
+# START SOLUTION #
+
 import os
 import time
-
-class AutoCompleteTree:
-    def __init__(self, arr):
-        self.arr = arr
-        self.root = Node(self.arr, 0)
-        self.root.distribute()
+# Object that contains the tree structure and methods that
+# enable a user to query said structure.
+class AutoCompleter:
+    # Dictionary is the entire array / list of words that are to be considered
+    def __init__(self, dictionary):
+        self.dictionary = dictionary
+        # root to the data structure that contains all options
+        self.root = DictionaryNode(self.dictionary, 0)
+        # populates the branches of each tree
+        self.root.build()
     
-    def getArr(self):
-        return self.arr
-
+    # Method that returns all autocomplete options based on the dictionary
+    # tree and the string provided.
     def getAutoComplete(self, str):
+        # Empty array that might be overwritten if values are found.
         arr = []
+        # The current node being explored. Always starts from the root.
+        # Is either set to a child of itself or none after every iteration
+        # of the loop.
         node = self.root
-        for char in str:
-            # assuming all characters are valid keys
-            subNode = node.map[char]
-            if(subNode != None):
-                node = subNode
+        # Iterates over every character in the provided string
+        for char in str.lower():
+            # checks if the char is a valid key on the current node
+            if(char in node.map.keys()):
+                # in the case it is
+                ## set the current node to the value linked with that key.
+                ### No Null check is required as keys are only added if a 
+                ### valid entry is in the list.
+                ### If the key is there, there will be a node.
+                node = node.map[char]
             else:
+                # in the case it isn't
+                ## set the current to null and break the loop
+                ## as we've reached the end of path and no words 
+                ## in the dictionary matched the provided string.
                 node = None
                 break
+        # Simple null check to see if we found a valid node
         if(node != None):
-            arr = node.getOptions()        
+            # in the case we did
+            ## set 'arr' to the options of the current node.
+            arr = node.getOptions()  
+        # regardless, we return arr.      
         return arr
 
 
-class Node:
+class DictionaryNode:
     # arr is the array of options that are valid for this path
-    # context is the path already built.
-    def __init__(self, arr, context):
-        self.value = arr
-        self.context = context
-        self.map = {'a': None, 'b': None, 'c': None, 'd': None, 'e': None, 'f':
-                    None, 'g': None, 'h': None, 'i': None, 'j': None, 'k': None, 'l': None, 'm': None, 'n': None, 'o': None, 'p': None, 'q': None, 'r': None, 's': None, 't': None, 'u': None, 'v': None, 'w': None, 'x': None, 'y': None, 'z': None, }
+    # Index is the length of string being considered. 
+    ## The value is always equal to it's parent's index + 1
+    def __init__(self, arr, index):
+        self.options = arr
+        self.index = index
+        self.map = {}
 
     def add(self, item):
         # assuming items are all valid
-        self.value.append(item)
+        self.options.append(item)
 
     def getOptions(self):
-        return self.value
+        return self.options
 
-    def distribute(self):
-        # l is a the length of context, prevents errors later
-        for i in self.value:
-            if(len(i) > self.context):
-                character = i[self.context].lower()
-                if(self.map[character] == None):
+    def build(self):
+        # Iterates over every element in the node's options.
+        for i in self.options:
+            # checks if the string is longer than the value of this node's 
+            # index. Prevents Out_Of_Index_Exceptions
+            if(len(i) > self.index):
+                # Grabs the lowercase value of the character at the
+                # position of self.index
+                character = i[self.index].lower()
+                # Checks if the character is not a valid entry in
+                # this node's map.
+                if(character not in self.map.keys()):
+                    # In the case it is 
+                    ## we create an empty array and append the word 
+                    # to it.
                     arr = []
                     arr.append(i)
-                    self.map[character] = Node(arr, self.context + 1)
+                    ## we then create a new node and initialize it with
+                    ## the new array as well as the incremented index.
+                    ## lastly, we map this node to key of 'character'
+                    self.map[character] = DictionaryNode(arr, self.index + 1)
                 else:
+                    # In the case it isn't:
+                    ## We know there's already a Node for the letter,
+                    ## so we just append the word to it's options.
                     self.map[character].add(i)
+        # Lastly, we iterate through every value in the map 
         for i in self.map.values():
+            # We check if it isn't null
             if(i != None):
-                i.distribute()
+                # in the case it isn't:
+                ## We call the build() method to evaluate this node and
+                ## all of it's potential children.
+                i.build()
 
+# END SOLUTION #
 
+# START TESTING #
+
+def printOptions(options):
+    s = ''
+    for option in options:
+        if(len(s) + len(option) >= 2 ** 14):    
+            print(s.strip())
+            s = "%s\n" % (option)
+        else:
+            s += "%s\n" % (option)
+    print(s.strip())
+    print('Found %s autocomplete options.' % (len(options)))
+
+# Stores the time the program started, used for stats.
 t = time.time()
 print("Loading list of words from file.")
+# Opens a list of words from a file.
 listFile = open('Problem 11/words.txt', 'r')
+# Creates an empty array that we can append words to
 list = []
+# Iterates over every line in document
 for line in listFile:
-    line = line.strip()  
-    valid = True
-    for char in line:
-        char = char.lower()
-        if char not in 'abcdefghijklmnopqrstuvwxyz':
-            valid = False
-            break
-    if(valid):
-        list.append(line)
+    # Strips the line to remove unnecessary characters.
+    line = line.strip() 
+    # Appends the line / word to the list.
+    list.append(line)
+# Closes the file for good merits.
+listFile.close()
+# Stores the time the method finished. Used to calc. how long it took.
 t2 = time.time()
 l = len(list)
 print('Finished loading list of %s word(s). Took %s seconds' % (l, t2 - t))
 t = time.time()
 print("Building tree from list.")
-tree = AutoCompleteTree(list)
+# Builds the AutoCompleter / DictionaryTree from the list
+tree = AutoCompleter(list)
 t2 = time.time()
 print('Finished building list of words. Took %s seconds' % (t2 - t))
 
-user = input("Enter a piece of text: ")
-while(user != ""):
-    options = tree.getAutoComplete(user)
-    print(options)
-    user = input("Enter a piece of text: ")
+# Loops around user input
+inp = input("Enter a piece of text: ")
+while(inp != ""):
+    # Queries the AutoCompleter from the input
+    options = tree.getAutoComplete(inp)
+    # Prints options to screen
+    printOptions(options)
+    inp = input("Enter a piece of text: ")
+# END TESTING #
