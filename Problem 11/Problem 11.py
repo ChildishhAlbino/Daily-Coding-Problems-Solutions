@@ -27,7 +27,10 @@
 #         }
 #      }
 #   
-        
+
+import os
+import time
+
 class AutoCompleteTree:
     def __init__(self, arr):
         self.arr = arr
@@ -38,13 +41,19 @@ class AutoCompleteTree:
         return self.arr
 
     def getAutoComplete(self, str):
+        arr = []
         node = self.root
         for char in str:
             # assuming all characters are valid keys
             subNode = node.map[char]
             if(subNode != None):
-                node = subNode        
-        return node.getOptions()
+                node = subNode
+            else:
+                node = None
+                break
+        if(node != None):
+            arr = node.getOptions()        
+        return arr
 
 
 class Node:
@@ -67,7 +76,7 @@ class Node:
         # l is a the length of context, prevents errors later
         for i in self.value:
             if(len(i) > self.context):
-                character = i[self.context]
+                character = i[self.context].lower()
                 if(self.map[character] == None):
                     arr = []
                     arr.append(i)
@@ -77,15 +86,33 @@ class Node:
         for i in self.map.values():
             if(i != None):
                 i.distribute()
-        
-            
 
-tree = AutoCompleteTree(["dog", "deer", "deal", "array"])
-# s = '{ '
-# for i in range (1, 27):
-#     char = chr(64 + i)
-#     s += "'%s': None, " % (char.lower())
-# s += '}'    
-# print(s)
-print(tree.getAutoComplete('dea'))
 
+t = time.time()
+print("Loading list of words from file.")
+listFile = open('Problem 11/words.txt', 'r')
+list = []
+for line in listFile:
+    line = line.strip()  
+    valid = True
+    for char in line:
+        char = char.lower()
+        if char not in 'abcdefghijklmnopqrstuvwxyz':
+            valid = False
+            break
+    if(valid):
+        list.append(line)
+t2 = time.time()
+l = len(list)
+print('Finished loading list of %s word(s). Took %s seconds' % (l, t2 - t))
+t = time.time()
+print("Building tree from list.")
+tree = AutoCompleteTree(list)
+t2 = time.time()
+print('Finished building list of words. Took %s seconds' % (t2 - t))
+
+user = input("Enter a piece of text: ")
+while(user != ""):
+    options = tree.getAutoComplete(user)
+    print(options)
+    user = input("Enter a piece of text: ")
